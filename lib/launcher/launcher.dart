@@ -65,7 +65,6 @@ class _LauncherPageState extends State<LauncherPage> {
   }
 
   Future<void> requestPermissions() async {
-    // readFile();
     var status = await Permission.storage.status;
     if (!status.isGranted) {
       if (await Permission.storage.request().isGranted) {
@@ -79,12 +78,52 @@ class _LauncherPageState extends State<LauncherPage> {
     if (!manageStatus.isGranted) {
       if (await Permission.manageExternalStorage.request().isGranted) {
         print('Manage External Storage permission granted');
-        // readFile();
       } else {
+        _showSettingsDialog();
         print('Manage External Storage permission denied');
       }
     }
     readFile();
+  }
+
+   void _showSettingsDialog() async {
+    var manageStatus = await Permission.manageExternalStorage.status;
+
+    showDialog(
+      // ignore: use_build_context_synchronously
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Izin Diperlukan'),
+        content: const Text(
+            'Aplikasi ini memerlukan izin penyimpanan agar berfungsi dengan baik. Harap berikan izin di pengaturan sistem.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () async {
+              if (!manageStatus.isGranted) {
+                if (await Permission.manageExternalStorage
+                    .request()
+                    .isGranted) {
+                  print('Manage External Storage permission granted');
+                } else {
+                  _showSettingsDialog();
+                  print('Manage External Storage permission denied');
+                }
+              }
+              readFile();
+              // openAppSettings();
+              Navigator.of(context).pop();
+            },
+            child: const Text('Buka Pengaturan'),
+          ),
+        ],
+      ),
+    );
   }
 
   void readFile() async {
