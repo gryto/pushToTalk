@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import '../../../../widgets/spacer/spacer_custom.dart';
 import '../../../gen/assets.gen.dart';
+import '../../../recordAndplayFix222.dart';
 import '../../../recordAndplayFix.dart';
 import '../../../record_and_play copy.dart';
 import '../../../record_and_play.dart';
@@ -126,7 +127,37 @@ class _MessageViewWidgetState extends State<MessageViewWidget> {
               ),
             );
           },
-        )
+        ),
+        ChatUserListCardWidget(
+          image: ApiService.imgDefault,
+          // Assets.images.user3.path,
+          name: 'Channel 4',
+          isOnline: true,
+          message: Text(
+            "Aku adalah anak gembala selalu riang serta",
+            overflow: TextOverflow.ellipsis,
+            style: SafeGoogleFont(
+              'SF Pro Text',
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              height: 1.2575,
+              letterSpacing: 1,
+              color: Colors.grey.shade500,
+            ),
+          ),
+          unReadCount: '',
+          isUnReadCountShow: false,
+          time: '07.00',
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => SoundRecorder(userId: widget.id,),
+                
+                // RecordingScreen(userId: widget.id,),
+              ),
+            );
+          },
+        ),
       ],
     );
   }
