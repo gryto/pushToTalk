@@ -15,7 +15,7 @@ class ApiService {
   static String listContact = "$endPoint/api/indexagen";
   static String getIdContact = "$endPoint/api/getagen";
   static String addContact = "$endPoint/api/addagen";
-
+  static String listChannel = "$endPoint/api/pushToTalk/channelList";
 
   static String sosCreate = "$endPoint/api/addsos";
   static String sosHistory = "$endPoint/api/historysos";

@@ -32,134 +32,247 @@ class MessageViewWidget extends StatefulWidget {
 }
 
 class _MessageViewWidgetState extends State<MessageViewWidget> {
+  SharedPref sharedPref = SharedPref();
+  bool isProcess = false;
+  int pageIndex = 0;
+  String fullName = "";
+  String division = "";
+  String typeUser = "";
+  String path = "";
+  String accessToken = "";
+  String message = "";
+  List listData = [];
+
+  @override
+  void initState() {
+    getData();
+    super.initState();
+  }
+
+  getData() async {
+    try {
+      var accessToken = await sharedPref.getPref("access_token");
+      var url = ApiService.listChannel;
+      var uri = url;
+      var bearerToken = 'Bearer $accessToken';
+      var response = await http.get(Uri.parse(uri),
+          headers: {"Authorization": bearerToken.toString()});
+
+      if (response.statusCode == 200) {
+        setState(() {
+          print("isian listchannel");
+          var content = json.decode(response.body);
+          print(content);
+          print("datanya");
+          listData = content['data'];
+          print(listData);
+        });
+      } else {
+        toastShort(context, message);
+      }
+    } catch (e) {
+      toastShort(context, e.toString());
+    }
+
+    setState(() {
+      isProcess = true;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    // final DateFormat dmy = DateFormat("HH:mm");
-    return Column(
-      children: [
-        ChatUserListCardWidget(
-          image: ApiService.imgDefault,
-          // Assets.images.user3.path,
-          name: 'Channel 1',
-          isOnline: true,
-          message: Text(
-            "Aku adalah anak gembala selalu riang serta",
-            overflow: TextOverflow.ellipsis,
-            style: SafeGoogleFont(
-              'SF Pro Text',
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              height: 1.2575,
-              letterSpacing: 1,
-              color: Colors.grey.shade500,
-            ),
-          ),
-          unReadCount: '',
-          isUnReadCountShow: false,
-          time: '07.00',
+    return ListView.separated(
+      padding: const EdgeInsets.only(bottom: 5, top: 5, left: 5.0, right: 5.0),
+      primary: false,
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      itemBuilder: (_, index) {
+        var row = listData[index];
+        print("lisdtdataperkara");
+        print(row);
+
+        return GestureDetector(
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) => AudioRecordingPage(userId: widget.id,)
-                // AudioToTextPage(),
-                // RecordingScreenCopy(userId: widget.id,),
-                // RecordingScreenSecond(userId: widget.id,),
-                // RecordingTextScreen(userId: widget.id,),
-                // RecordingScreen( userId: widget.id),
+                builder: (context) {
+                  // Navigasi berdasarkan index atau data tertentu
+                  if (index == 0) {
+                    return RecordingScreen(
+                      userId: widget.id,
+                      channelId: row['id'].toString(),
+                      dataUser: row['users'],
+                    );
+                  } else if (index == 1) {
+                    return RecordingScreen(
+                      userId: widget.id,
+                      channelId: row['id'].toString(),
+                      dataUser: row['users'],
+                    );
+                  } else {
+                    // Navigasi default atau kondisi lainnya
+                    return RecordingScreen(
+                      userId: widget.id,
+                      channelId: row['id'].toString(),
+                      dataUser: row['users'],
+                    );
+                  }
+                },
               ),
             );
           },
-        ),
-        ChatUserListCardWidget(
-          image: ApiService.imgDefault,
-          // Assets.images.user3.path,
-          name: 'Channel 2',
-          isOnline: true,
-          message: Text(
-            "Aku adalah anak gembala selalu riang serta",
-            overflow: TextOverflow.ellipsis,
-            style: SafeGoogleFont(
-              'SF Pro Text',
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              height: 1.2575,
-              letterSpacing: 1,
-              color: Colors.grey.shade500,
+          child: ChatUserListCardWidget(
+            image: ApiService.imgDefault,
+            name: row['nama'] ?? "-",
+            isOnline: true,
+            message: Text(
+              row['deskripsi'],
+              overflow: TextOverflow.ellipsis,
+              style: SafeGoogleFont(
+                'SF Pro Text',
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                height: 1.2575,
+                letterSpacing: 1,
+                color: Colors.grey.shade500,
+              ),
             ),
+            unReadCount: '',
+            isUnReadCountShow: false,
+            time: '07.00',
           ),
-          unReadCount: '',
-          isUnReadCountShow: false,
-          time: '07.00',
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => RecordingScreen(userId: widget.id,),
-              ),
-            );
-          },
-        ),
-        ChatUserListCardWidget(
-          image: ApiService.imgDefault,
-          // Assets.images.user3.path,
-          name: 'Channel 3',
-          isOnline: true,
-          message: Text(
-            "Aku adalah anak gembala selalu riang serta",
-            overflow: TextOverflow.ellipsis,
-            style: SafeGoogleFont(
-              'SF Pro Text',
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              height: 1.2575,
-              letterSpacing: 1,
-              color: Colors.grey.shade500,
-            ),
-          ),
-          unReadCount: '',
-          isUnReadCountShow: false,
-          time: '07.00',
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => AudioRecordingPageFix(userId: widget.id,),
-                
-                // RecordingScreen(userId: widget.id,),
-              ),
-            );
-          },
-        ),
-        ChatUserListCardWidget(
-          image: ApiService.imgDefault,
-          // Assets.images.user3.path,
-          name: 'Channel 4',
-          isOnline: true,
-          message: Text(
-            "Aku adalah anak gembala selalu riang serta",
-            overflow: TextOverflow.ellipsis,
-            style: SafeGoogleFont(
-              'SF Pro Text',
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              height: 1.2575,
-              letterSpacing: 1,
-              color: Colors.grey.shade500,
-            ),
-          ),
-          unReadCount: '',
-          isUnReadCountShow: false,
-          time: '07.00',
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => SoundRecorder(userId: widget.id,),
-                
-                // RecordingScreen(userId: widget.id,),
-              ),
-            );
-          },
-        ),
-      ],
+        );
+      },
+      separatorBuilder: (_, index) => const SizedBox(
+        height: 5,
+      ),
+      itemCount: listData.isEmpty ? 0 : listData.length,
     );
+
+    // Column(
+    //   children: [
+    //     ChatUserListCardWidget(
+    //       image: ApiService.imgDefault,
+    //       name: 'Channel 1',
+    //       isOnline: true,
+    //       message: Text(
+    //         "Aku adalah anak gembala selalu riang serta",
+    //         overflow: TextOverflow.ellipsis,
+    //         style: SafeGoogleFont(
+    //           'SF Pro Text',
+    //           fontSize: 14,
+    //           fontWeight: FontWeight.w500,
+    //           height: 1.2575,
+    //           letterSpacing: 1,
+    //           color: Colors.grey.shade500,
+    //         ),
+    //       ),
+    //       unReadCount: '',
+    //       isUnReadCountShow: false,
+    //       time: '07.00',
+    //       onTap: () {
+    //         Navigator.of(context).push(
+    //           MaterialPageRoute(
+    //               builder: (context) => AudioRecordingPage(
+    //                     userId: widget.id,
+    //                   )),
+    //         );
+    //       },
+    //     ),
+    //     ChatUserListCardWidget(
+    //       image: ApiService.imgDefault,
+    //       name: 'Channel 2',
+    //       isOnline: true,
+    //       message: Text(
+    //         "Aku adalah anak gembala selalu riang serta",
+    //         overflow: TextOverflow.ellipsis,
+    //         style: SafeGoogleFont(
+    //           'SF Pro Text',
+    //           fontSize: 14,
+    //           fontWeight: FontWeight.w500,
+    //           height: 1.2575,
+    //           letterSpacing: 1,
+    //           color: Colors.grey.shade500,
+    //         ),
+    //       ),
+    //       unReadCount: '',
+    //       isUnReadCountShow: false,
+    //       time: '07.00',
+    //       onTap: () {
+    //         Navigator.of(context).push(
+    //           MaterialPageRoute(
+    //             builder: (context) => RecordingScreen(
+    //               userId: widget.id,
+    //             ),
+    //           ),
+    //         );
+    //       },
+    //     ),
+    //     ChatUserListCardWidget(
+    //       image: ApiService.imgDefault,
+    //       name: 'Channel 3',
+    //       isOnline: true,
+    //       message: Text(
+    //         "Aku adalah anak gembala selalu riang serta",
+    //         overflow: TextOverflow.ellipsis,
+    //         style: SafeGoogleFont(
+    //           'SF Pro Text',
+    //           fontSize: 14,
+    //           fontWeight: FontWeight.w500,
+    //           height: 1.2575,
+    //           letterSpacing: 1,
+    //           color: Colors.grey.shade500,
+    //         ),
+    //       ),
+    //       unReadCount: '',
+    //       isUnReadCountShow: false,
+    //       time: '07.00',
+    //       onTap: () {
+    //         Navigator.of(context).push(
+    //           MaterialPageRoute(
+    //             builder: (context) => AudioRecordingPageFix(
+    //               userId: widget.id,
+    //             ),
+
+    //             // RecordingScreen(userId: widget.id,),
+    //           ),
+    //         );
+    //       },
+    //     ),
+    //     ChatUserListCardWidget(
+    //       image: ApiService.imgDefault,
+    //       // Assets.images.user3.path,
+    //       name: 'Channel 4',
+    //       isOnline: true,
+    //       message: Text(
+    //         "Aku adalah anak gembala selalu riang serta",
+    //         overflow: TextOverflow.ellipsis,
+    //         style: SafeGoogleFont(
+    //           'SF Pro Text',
+    //           fontSize: 14,
+    //           fontWeight: FontWeight.w500,
+    //           height: 1.2575,
+    //           letterSpacing: 1,
+    //           color: Colors.grey.shade500,
+    //         ),
+    //       ),
+    //       unReadCount: '',
+    //       isUnReadCountShow: false,
+    //       time: '07.00',
+    //       onTap: () {
+    //         Navigator.of(context).push(
+    //           MaterialPageRoute(
+    //             builder: (context) => SoundRecorder(
+    //               userId: widget.id,
+    //             ),
+
+    //             // RecordingScreen(userId: widget.id,),
+    //           ),
+    //         );
+    //       },
+    //     ),
+    //   ],
+    // );
   }
 
   // Fungsi untuk mengubah selisih waktu menjadi format menit yang lalu
@@ -175,106 +288,6 @@ class _MessageViewWidgetState extends State<MessageViewWidget> {
     }
   }
 }
-
-// ignore: must_be_immutable
-// class MessageViewWidget extends StatelessWidget {
-//   final List<dynamic> data;
-//   final String senderId, roomId,roomUserId;
-
-//   MessageViewWidget({Key? key, required this.data, required this.senderId , required this.roomId,required this.roomUserId})
-//       : super(key: key);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final DateFormat dmy = DateFormat("HH:mm");
-//     return ListView.separated(
-//       padding: const EdgeInsets.only(bottom: 5, top: 5, left: 5.0, right: 5.0),
-//       primary: false,
-//       physics: const NeverScrollableScrollPhysics(),
-//       shrinkWrap: true,
-//       itemBuilder: (_, index) {
-//         var row = data[index];
-
-//         // var local = dmy.format(DateTime.parse(row['chats'][0]['sent_at']).toLocal());
-//         //   var localDate = dmy.format(DateTime.parse(row['sent_at']).toLocal());
-//         // var datetime = local.toString();
-
-//         final String jsonString = row['chats'][0]['sent_at'];
-//         // String dateString = "2024-03-05 09:37:36";
-//         DateTime sentAt = DateTime.parse(jsonString);
-
-//         // Parse JSON ke objek DateTime
-//         // DateTime sentAt = DateTime.parse(jsonDecode(jsonString)(row['chats'][0]['sent_at']));
-
-//         // Hitung selisih waktu
-//         Duration difference = DateTime.now().difference(sentAt);
-
-//         // Ubah selisih waktu menjadi format yang diinginkan (menit yang lalu)
-//         String timeAgo = timeAgoFromDuration(difference);
-
-//         return ChatUserListCardWidget(
-//           name: row['fullname'],
-//           // ignore: prefer_interpolation_to_compose_strings
-//           image: '${ApiService.folder}/image-user/' + row['image'],
-//           isOnline: true,
-//           message: row['chats'][0]['message_content'] == null
-//               ? Text(row['chats'][0]['message_content'].toString())
-//               : Row(
-//                   children: [
-//                     Icon(
-//                       Icons.image,
-//                       color: Colors.grey.shade400,
-//                     ),
-//                     Text(
-//                       "Foto",
-//                       style: SafeGoogleFont(
-//                         'SF Pro Text',
-//                         fontSize: 14,
-//                         fontWeight: FontWeight.w500,
-//                         height: 1.2575,
-//                         letterSpacing: 1,
-//                         color: Colors.grey.shade500,
-//                       ),
-//                     )
-//                   ],
-//                 ),
-//           unReadCount: '1',
-//           isUnReadCountShow: false,
-//           time:
-//           // row['chats'][0]['sent_at'],
-//           timeAgo,
-//           onTap: () {
-//             Get.to(ChatRoomPage(
-//               roomId: roomId,
-//               roomUserId: roomUserId,
-//                 receiverId: row['id'].toString(),
-//                 receiverName: row['fullname'],
-//                 senderId: senderId,
-//                 receiverImage: row['image'],
-//                 hp: row['no_hp']));
-//           },
-//         );
-//       },
-//       separatorBuilder: (_, index) => const SizedBox(
-//         height: 5,
-//       ),
-//       itemCount: data.length,
-//     );
-//   }
-
-//   // Fungsi untuk mengubah selisih waktu menjadi format menit yang lalu
-//   String timeAgoFromDuration(Duration difference) {
-//     if (difference.inSeconds < 60) {
-//       return 'Baru saja';
-//     } else if (difference.inMinutes < 60) {
-//       return '${difference.inMinutes} menit yang lalu';
-//     } else if (difference.inHours < 24) {
-//       return '${difference.inHours} jam yang lalu';
-//     } else {
-//       return DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
-//     }
-//   }
-// }
 
 class ChatUserListCardWidget extends StatelessWidget {
   const ChatUserListCardWidget({

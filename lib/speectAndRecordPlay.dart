@@ -87,7 +87,7 @@ class _RecordingTextScreenState extends State<RecordingTextScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Channel 1'),
+        title: const Text('Channel 3'),
       ),
       body: Center(
         child: Column(

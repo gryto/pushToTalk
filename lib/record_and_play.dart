@@ -10,16 +10,23 @@ import 'package:http/http.dart' as http;
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'gen/assets.gen.dart';
+import 'src/api.dart';
 import 'src/constant.dart';
 import 'src/preference.dart';
 import 'src/toast.dart';
 import 'package:googleapis/speech/v1.dart' as stt;
 
+import 'src/utils.dart';
+
 class RecordingScreen extends StatefulWidget {
-  final String userId;
+  final String userId, channelId;
+  final dataUser;
   const RecordingScreen({
     super.key,
     required this.userId,
+    required this.channelId,
+    required this.dataUser,
   });
 
   @override
@@ -43,6 +50,9 @@ class _RecordingScreenState extends State<RecordingScreen> {
   bool isRecordingMode = true;
   String audioPath = "";
   List AudioList = [];
+  List listData = [];
+  String message = "";
+  bool isProcess = false;
   TextEditingController controller = TextEditingController();
 
   @override
@@ -52,6 +62,7 @@ class _RecordingScreenState extends State<RecordingScreen> {
     audioRecord = Record();
     initSocket();
     checkMicrophoneAvailability();
+    getData();
   }
 
   @override
@@ -59,6 +70,36 @@ class _RecordingScreenState extends State<RecordingScreen> {
     audioRecord.dispose();
     audioPlayer.dispose();
     super.dispose();
+  }
+
+  getData() async {
+    try {
+      var accessToken = await sharedPref.getPref("access_token");
+      var url = ApiService.listChannel;
+      var uri = url;
+      var bearerToken = 'Bearer $accessToken';
+      var response = await http.get(Uri.parse(uri),
+          headers: {"Authorization": bearerToken.toString()});
+
+      if (response.statusCode == 200) {
+        setState(() {
+          print("isian listchannel");
+          var content = json.decode(response.body);
+          print(content);
+          print("datanya");
+          listData = content['data'];
+          print(listData);
+        });
+      } else {
+        toastShort(context, message);
+      }
+    } catch (e) {
+      toastShort(context, e.toString());
+    }
+
+    setState(() {
+      isProcess = true;
+    });
   }
 
   void checkMicrophoneAvailability() async {
@@ -240,8 +281,12 @@ class _RecordingScreenState extends State<RecordingScreen> {
     socket.onConnect((_) {
       print('Connection established22');
       String userId = widget.userId.toString();
+      String channelId = widget.channelId.toString();
       print("User ID: $userId");
-      socket.emit('Join_Room_Ptt', {'user_id': userId});
+      socket.emit('Join_Room_Ptt', {
+        'user_id': userId,
+        'channel_id': channelId,
+      });
     });
 
     socket.onDisconnect((_) {
@@ -265,11 +310,11 @@ class _RecordingScreenState extends State<RecordingScreen> {
       print("inisblmkontentsuata");
 
       String content = audioReceived['ptt']['content'];
-        print("iniisikonten");
-        print(content);
-        audioUrl = 'http://paket7.kejaksaan.info:3019/$content';
-        print("inisudiodriserver");
-        print(audioUrl);
+      print("iniisikonten");
+      print(content);
+      audioUrl = 'http://paket7.kejaksaan.info:3019/$content';
+      print("inisudiodriserver");
+      print(audioUrl);
 
       // setState(() {
       //   String content = audioReceived['ptt']['content'];
@@ -299,7 +344,7 @@ class _RecordingScreenState extends State<RecordingScreen> {
 
       Map<String, dynamic> messageMap = {
         'audioBlob': audioBlob,
-        'channel_id': 1,
+        'channel_id': widget.channelId,
         'voice_teks': text
       };
 
@@ -428,88 +473,258 @@ class _RecordingScreenState extends State<RecordingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Channel 1'),
+        title: const Text('Channel 2'),
       ),
-      body: Column(
-        children: [
-          Center(
-            child: isRecordingMode
-                ? Column(
-                    children: [
-                      SingleChildScrollView(
-                        reverse: true,
-                        physics: const BouncingScrollPhysics(),
-                        child: Container(
-                          // height: MediaQuery.of(context).size.height * 0.7,
-                          width: MediaQuery.of(context).size.width,
-                          alignment: Alignment.center,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 16),
-                          margin: const EdgeInsets.only(bottom: 150),
-                          child: SelectableText(
-                            text,
-                            style: TextStyle(
-                                fontSize: 18,
-                                color: isRecording
-                                    ? Colors.black87
-                                    : Colors.black54),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            ListView.separated(
+              padding: const EdgeInsets.only(
+                  bottom: 5, top: 5, left: 5.0, right: 5.0),
+              primary: true,
+              scrollDirection: Axis.vertical,
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemBuilder: (_, index) {
+                var row = widget.dataUser[index];
+
+                print("listdatauser");
+                print(row);
+
+                return GestureDetector(
+                  onTap: () {
+                    // Navigator.of(context).push(
+                    //   MaterialPageRoute(
+                    //     builder: (context) => ActivityDetail(
+                    //       activityUser: row['username'] ?? "",
+                    //       activityIp: row['ip_address'] ?? "",
+                    //       activityBrowser: row['browser'] ?? "",
+                    //       activityPlatform: row['platform'] ?? "",
+                    //       activityDescription: row['activity'] ?? "",
+                    //       activityCreated: row['created_at'] ?? "",
+                    //       activityUpdated: row['updated_at'] ?? "",
+                    //     ),
+                    //   ),
+                    // );
+                  },
+                  child: GestureDetector(
+                    onTap: () {},
+                    child: Column(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.rectangle,
+                            boxShadow: [
+                              BoxShadow(
+                                  blurRadius: 20,
+                                  color: Colors.grey.shade200,
+                                  spreadRadius: 2)
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                                left: 8, right: 8, top: 5, bottom: 8),
+                            child: Column(
+                              children: [
+                                GestureDetector(
+                                  onTap: () {},
+                                  child: const SizedBox(
+                                    height: 20,
+                                    width: 80,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Icon(Icons.more_vert),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                CircleAvatar(
+                                  radius: 30.0,
+                                  backgroundColor: Colors.white,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 5, horizontal: 5),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                          border:
+                                              Border.all(color: Colors.black45),
+                                          color: Colors.black26,
+                                          shape: BoxShape.circle),
+                                      child: const Icon(Icons.mic),
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  row['fullname'] ?? '-',
+                                  style: SafeGoogleFont(
+                                    'SF Pro Text',
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.2575,
+                                    letterSpacing: 1,
+                                    color: clrPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      IconButton(
+                        const SizedBox(
+                          height: 10,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+              separatorBuilder: (_, index) => const SizedBox(
+                height: 5,
+              ),
+              itemCount: widget.dataUser.isEmpty ? 0 : widget.dataUser.length,
+            ),
+
+            // GestureDetector(
+            //   onTap: () {},
+            //   child: Column(
+            //     children: [
+            //       Container(
+            //         decoration: BoxDecoration(
+            //           color: Colors.white,
+            //           shape: BoxShape.rectangle,
+            //           boxShadow: [
+            //             BoxShadow(
+            //                 blurRadius: 20,
+            //                 color: Colors.grey.shade200,
+            //                 spreadRadius: 2)
+            //           ],
+            //         ),
+            //         child: Padding(
+            //           padding: const EdgeInsets.all(15),
+            //           child: Column(
+            //             children: [
+            //               CircleAvatar(
+            //                 radius: 30.0,
+            //                 backgroundColor: Colors.white,
+            //                 child: Padding(
+            //                   padding: const EdgeInsets.symmetric(
+            //                       vertical: 5, horizontal: 5),
+            //                   child: Container(
+            //                     padding: const EdgeInsets.all(10),
+            //                     decoration: BoxDecoration(
+            //                         border: Border.all(color: Colors.black45),
+            //                         color: Colors.black26,
+            //                         shape: BoxShape.circle),
+            //                     child: const Icon(Icons.mic),
+            //                   ),
+            //                 ),
+            //               ),
+            //               Text(
+            //                 'Send Video',
+            //                 style: SafeGoogleFont(
+            //                   'SF Pro Text',
+            //                   fontSize: 12,
+            //                   fontWeight: FontWeight.w500,
+            //                   height: 1.2575,
+            //                   letterSpacing: 1,
+            //                   color: clrBackground,
+            //                 ),
+            //               ),
+            //             ],
+            //           ),
+            //         ),
+            //       ),
+            //       const SizedBox(
+            //         height: 10,
+            //       ),
+            //     ],
+            //   ),
+            // ),
+            Center(
+              child: isRecordingMode
+                  ? Column(
+                      children: [
+                        // SingleChildScrollView(
+                        //   reverse: true,
+                        //   physics: const BouncingScrollPhysics(),
+                        //   child: Container(
+                        //     // height: MediaQuery.of(context).size.height * 0.7,
+                        //     width: MediaQuery.of(context).size.width,
+                        //     alignment: Alignment.center,
+                        //     padding: const EdgeInsets.symmetric(
+                        //         horizontal: 24, vertical: 16),
+                        //     margin: const EdgeInsets.only(bottom: 150),
+                        //     child: SelectableText(
+                        //       text,
+                        //       style: TextStyle(
+                        //           fontSize: 18,
+                        //           color: isRecording
+                        //               ? Colors.black87
+                        //               : Colors.black54),
+                        //     ),
+                        //   ),
+                        // ),
+                        const SizedBox(
+                          height: 85,
+                        ),
+                        IconButton(
+                            icon: Icon(
+                              isRecording
+                                  ? Icons.fiber_manual_record
+                                  : Icons.mic_none,
+                              color: clrPrimary,
+                              size: 50,
+                            ),
+                            onPressed:
+                                isRecording ? stopRecording : startRecording),
+                      ],
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
                           icon: Icon(
-                            isRecording
-                                ? Icons.fiber_manual_record
-                                : Icons.mic_none,
-                            color: Colors.red,
+                            isPlaying ? Icons.pause_circle : Icons.play_circle,
+                            color: Colors.green,
                             size: 50,
                           ),
-                          onPressed:
-                              isRecording ? stopRecording : startRecording),
-                    ],
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          isPlaying ? Icons.pause_circle : Icons.play_circle,
-                          color: Colors.green,
-                          size: 50,
+                          onPressed: isPlaying
+                              ? pauseRecording
+                              :
+                              // transcribeAudio
+                              playRecording,
                         ),
-                        onPressed: isPlaying
-                            ? pauseRecording
-                            :
-                            // transcribeAudio
-                            playRecording,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete,
-                            color: Colors.red, size: 50),
-                        onPressed: deleteRecording,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.cloud_upload,
-                            color: Colors.green, size: 50),
-                        onPressed: () => sendAudio(audioPath),
-                        // uploadAndDeleteRecording,
-                      ),
-                      // IconButton(
-                      //   icon: const Icon(Icons.transcribe,
-                      //       color: Colors.blue, size: 50),
-                      //   onPressed: transcribeAudio,
-                      // ),
-                    ],
-                  ),
-          ),
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: SelectableText(text,
-                  style: TextStyle(fontSize: 18, color: Colors.black87)),
+                        IconButton(
+                          icon: const Icon(Icons.delete,
+                              color: Colors.red, size: 50),
+                          onPressed: deleteRecording,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.cloud_upload,
+                              color: Colors.green, size: 50),
+                          onPressed: () => sendAudio(audioPath),
+                          // uploadAndDeleteRecording,
+                        ),
+                        // IconButton(
+                        //   icon: const Icon(Icons.transcribe,
+                        //       color: Colors.blue, size: 50),
+                        //   onPressed: transcribeAudio,
+                        // ),
+                      ],
+                    ),
             ),
-          ),
-        ],
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: SelectableText(text,
+                    style:
+                        const TextStyle(fontSize: 18, color: Colors.black87)),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
