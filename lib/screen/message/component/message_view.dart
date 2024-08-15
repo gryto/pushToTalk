@@ -95,28 +95,38 @@ class _MessageViewWidgetState extends State<MessageViewWidget> {
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) {
+                builder: (context) { 
+                  return RecordingScreen(
+                      userId: widget.id,
+                      channelId: row['id'].toString(),
+                      dataUser: row['users'],
+                      channelName: row['nama'].toString(),
+                    );
                   // Navigasi berdasarkan index atau data tertentu
-                  if (index == 0) {
-                    return RecordingScreen(
-                      userId: widget.id,
-                      channelId: row['id'].toString(),
-                      dataUser: row['users'],
-                    );
-                  } else if (index == 1) {
-                    return RecordingScreen(
-                      userId: widget.id,
-                      channelId: row['id'].toString(),
-                      dataUser: row['users'],
-                    );
-                  } else {
-                    // Navigasi default atau kondisi lainnya
-                    return RecordingScreen(
-                      userId: widget.id,
-                      channelId: row['id'].toString(),
-                      dataUser: row['users'],
-                    );
-                  }
+                  // if (index == 0) {
+                  //   return RecordingScreen(
+                  //     userId: widget.id,
+                  //     channelId: row['id'].toString(),
+                  //     dataUser: row['users'],
+                  //     channelName: row['nama'].toString(),
+                  //   );
+                  // } else if (index == 1) {
+                  //   return RecordingScreen(
+                  //     userId: widget.id,
+                  //     channelId: row['id'].toString(),
+                  //     channelName: row['nama'].toString(),
+                  //     dataUser: row['users'],
+                      
+                  //   );
+                  // } else {
+                  //   // Navigasi default atau kondisi lainnya
+                  //   return RecordingScreen(
+                  //     userId: widget.id,
+                  //     channelId: row['id'].toString(),
+                  //     dataUser: row['users'],
+                  //     channelName: row['nama'].toString(),
+                  //   );
+                  // }
                 },
               ),
             );
