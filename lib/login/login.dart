@@ -247,8 +247,10 @@ class _LoginPageState extends State<LoginPage> {
 
     return SafeArea(
       child: Scaffold(
-        body: Background(
-          child: Form(
+        body:
+        //  Background(
+        //   child: 
+          Form(
             key: _formKey,
             child: SingleChildScrollView(
               child: Stack(
@@ -468,7 +470,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           ),
-        ),
+        // ),
       ),
     );
   }
